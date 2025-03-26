@@ -41,3 +41,4 @@ class TreatmentReport(Base):
     # Processing status
     is_processed = Column(Boolean, default=False)
     processing_errors = Column(Text, nullable=True)
+    

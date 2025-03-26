@@ -2,9 +2,11 @@ from typing import Optional, List, Any
 from pydantic import BaseModel, Field
 from datetime import datetime
 from uuid import UUID
+from app.services.fraud_detection import FraudDetectionService
 
 
 class TreatmentReportBase(BaseModel):
+    
     """Base fields for treatment report."""
     identifiant_unique: Optional[str] = None
     regime_assurance: Optional[str] = None

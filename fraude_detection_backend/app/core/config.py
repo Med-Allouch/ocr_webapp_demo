@@ -1,6 +1,7 @@
 import os
 from typing import List, Optional
-from pydantic import BaseSettings, PostgresDsn
+from pydantic_settings import BaseSettings
+from pydantic import PostgresDsn  
 
 
 class Settings(BaseSettings):
@@ -11,7 +12,7 @@ class Settings(BaseSettings):
     POSTGRES_SERVER: str = os.getenv("POSTGRES_SERVER", "localhost")
     POSTGRES_USER: str = os.getenv("POSTGRES_USER", "postgres")
     POSTGRES_PASSWORD: str = os.getenv("POSTGRES_PASSWORD", "medall")
-    POSTGRES_DB: str = os.getenv("POSTGRES_DB", "cdc_fraud_detection")
+    POSTGRES_DB: str = os.getenv("POSTGRES_DB", "health_inssurance_db")
     POSTGRES_PORT: str = os.getenv("POSTGRES_PORT", "5432")
     
     DATABASE_URL: Optional[PostgresDsn] = None

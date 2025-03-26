@@ -12,7 +12,7 @@ from app.schemas.reports import (
     TreatmentReportListResponse,
 )
 from app.services.extraction import ExtractionService
-from app.services.fraud_detection import FraudDetectionService
+from app.services.fraud_detection import FraudDetectionService # type: ignore
 from app.utils.file_handling import validate_file_extension, validate_file_size
 
 logger = logging.getLogger(__name__)

@@ -1,0 +1,1 @@
+"labeling-interface\image_folder"
