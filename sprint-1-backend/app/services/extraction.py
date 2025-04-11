@@ -4,9 +4,7 @@ from .placeholder import PlaceholderExtractor
 from ..core.config import settings
 
 class ExtractionService:
-    """
-    Main extraction service that can use different extraction methods
-    """
+
     def __init__(self):
         """
         Initialize extraction service based on current configuration

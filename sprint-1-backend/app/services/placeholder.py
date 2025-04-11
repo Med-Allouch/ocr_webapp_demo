@@ -1,31 +1,26 @@
-# app/services/placeholder.py
 from typing import Dict, Any
-import uuid
-from datetime import datetime
+from sqlalchemy.sql import func
+from ..db.database import SessionLocal
+from ..db.models import ExtractedClaim
 
 class PlaceholderExtractor:
-    """
-    Placeholder extractor to simulate document data extraction
-    """
+    
     def extract(self, file_path: str) -> Dict[str, Any]:
-        """
-        Generate mock document data
-        
-        :param file_path: Path to the file (not used in placeholder)
-        :return: Mock extracted data
-        """
-        return {
-            "id": str(uuid.uuid4()),
-            "identifiant_unique": f"DOC-{datetime.now().strftime('%Y%m%d-%H%M%S')}",
-            "regime_assurance": "General Health Insurance",
-            "prenom_assure": "Jean",
-            "nom_assure": "Dupont",
-            "adress_assure": "123 Rue de la République, Paris",
-            "code_postal_assure": "75001",
-            "qualite_beneficiaire": "Titular",
-            "prenom_malade": "Marie",
-            "nom_malade": "Dupont",
-            "date_naissance_malade": "1985-03-15",
-            "n_tel_malade": "+33612345678",
-            "signature_assure": "JD_Signature_Mock"
-        }
+        db = SessionLocal()
+        try:
+            # Return a random row to simulate "new extraction"
+            claim = db.query(ExtractedClaim).order_by(func.random()).first()
+            if not claim:
+                return {"error": "No data found in extracted_claims"}
+
+            return {
+                "id": claim.id,
+                "age": claim.age,
+                "sex": claim.sex,
+                "bmi": claim.bmi,
+                "children": claim.children,
+                "region": claim.region,
+                "charges": claim.charges
+            }
+        finally:
+            db.close()

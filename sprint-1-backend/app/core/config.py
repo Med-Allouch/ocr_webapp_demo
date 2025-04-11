@@ -1,12 +1,12 @@
 # app/core/config.py
-from pydantic import BaseSettings
+from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
     """
     Application configuration settings
     """
     # Database configuration
-    DATABASE_URL: str = "postgresql://user:password@localhost/documentdb"
+    DATABASE_URL: str = "postgresql://postgres:souissi11179494@localhost:5432/insurance_medical"
     
     # File upload settings
     UPLOAD_DIR: str = "uploaded_files"
