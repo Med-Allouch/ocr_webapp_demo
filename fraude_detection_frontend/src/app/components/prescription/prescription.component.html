@@ -1,0 +1,201 @@
+
+  <!-- Bootstrap Icons -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.5/font/bootstrap-icons.min.css" rel="stylesheet">
+
+
+<body>
+  <div class="container mt-5">
+    <div class="row mb-4">
+      <div class="col">
+        <h2 class="text-center">Résultats de l'Analyse de l'Ordonnance</h2>
+        <div class="alert alert-info">
+          <strong>Type de Document :</strong>
+          <span class="badge bg-primary ms-2" (click)="goToBulletin()">Bulletin de Soin</span>
+          <span class="badge bg-primary ms-2" (click)="goToPrescription()">Ordonnance</span>
+        </div>
+        <p class="text-muted">Fichier : <span class="fst-italic">Non spécifié</span></p>
+      </div>
+    </div>
+
+    <div class="card mb-4">
+      <div class="card-header bg-primary text-white">
+        <h4 class="mb-0"><i class="bi bi-person-badge me-2"></i> Patient Information</h4>
+      </div>
+      <div class="card-body">
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <label class="form-label">ID Bénéficiaire</label>
+            <p class="field-bordered"></p>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Identité du malade</label>
+            <p class="field-bordered"></p>
+          </div>
+        </div>
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <label class="form-label">Régime</label>
+            <p class="field-bordered"></p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card mb-4">
+      <div class="card-header bg-success text-white">
+        <h4 class="mb-0"><i class="bi bi-calendar-check me-2"></i> Détaille de l'Ordonnance</h4>
+      </div>
+      <div class="card-body">
+        <div class="row mb-3">
+          <div class="col-md-12">
+            <label class="form-label">Date de Dispensation</label>
+            <p class="field-bordered"></p>
+          </div>
+        </div>
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <label class="form-label">Code du prescripteur</label>
+            <p class="field-bordered"></p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card mb-4">
+      <div class="card-header bg-success text-white">
+        <h4 class="mb-0"><i class="bi bi-shop me-2"></i> Informations sur la Pharmacie</h4>
+      </div>
+      <div class="card-body">
+        <div class="row mb-3">
+          <div class="col-md-12">
+            <label class="form-label">Exécuteur</label>
+            <p class="field-bordered"></p>
+          </div>
+        </div>
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <label class="form-label">Référence CNAM du Pharmacien</label>
+            <p class="field-bordered"></p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card mb-4">
+      <div class="card-header bg-success text-white">
+        <h4 class="mb-0"><i class="bi bi-capsule me-2"></i> Produits / Articles</h4>
+      </div>
+      <div class="card-body">
+        <div class="row mb-3">
+          <div class="col-md-12">
+            <label class="form-label">Code PCT</label>
+            <p class="field-bordered"></p>
+          </div>
+        </div>
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <label class="form-label">Produit/Article</label>
+            <p class="field-bordered"></p>
+          </div>
+        </div>
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <label class="form-label">Forme</label>
+            <p class="field-bordered"></p>
+          </div>
+        </div>
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <label class="form-label">Quantité</label>
+            <p class="field-bordered"></p>
+          </div>
+        </div>
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <label class="form-label">Prix Unitaire (PUV)</label>
+            <p class="field-bordered"></p>
+          </div>
+        </div>
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <label class="form-label">PR/Lot</label>
+            <p class="field-bordered"></p>
+          </div>
+        </div>
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <label class="form-label">Prix HT</label>
+            <p class="field-bordered"></p>
+          </div>
+        </div>
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <label class="form-label">TVA</label>
+            <p class="field-bordered"></p>
+          </div>
+        </div>
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <label class="form-label">Total</label>
+            <p class="field-bordered"></p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card mb-4">
+      <div class="card-header bg-success text-white">
+        <h4 class="mb-0"><i class="bi bi-credit-card me-2"></i> Détaille de Payement</h4>
+      </div>
+      <div class="card-body">
+        <div class="row mb-3">
+          <div class="col-md-12">
+            <label class="form-label">Montant perçu</label>
+            <p class="field-bordered"></p>
+          </div>
+        </div>
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <label class="form-label">Montant Restant</label>
+            <p class="field-bordered"></p>
+          </div>
+        </div>
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <label class="form-label">Total HT</label>
+            <p class="field-bordered"></p>
+          </div>
+        </div>
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <label class="form-label">Total TVA</label>
+            <p class="field-bordered"></p>
+          </div>
+        </div>
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <label class="form-label">Total TTC</label>
+            <p class="field-bordered"></p>
+          </div>
+        </div>
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <label class="form-label">Arrêté à la somme de</label>
+            <p class="field-bordered"></p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="row mb-5">
+      <div class="col-12 text-center">
+        <button class="btn btn-primary me-2">
+          <i class="bi bi-printer"></i> Imprimer les Données
+        </button>
+        <button class="btn btn-danger">
+          <i class="bi bi-flag"></i> Signaler un Problème
+        </button>
+      </div>
+    </div>
+  </div>
