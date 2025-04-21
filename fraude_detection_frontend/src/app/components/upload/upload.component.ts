@@ -20,6 +20,7 @@ interface UploadFile {
 export class UploadComponent {
   @Output() close = new EventEmitter<boolean>();
   
+  
   // Changed from single documentType to uploadFiles with individual types
   uploadFiles: UploadFile[] = [];
   isUploading = false;

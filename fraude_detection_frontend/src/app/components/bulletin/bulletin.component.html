@@ -1,215 +1,256 @@
-<!DOCTYPE html>
-<html lang="fr">
-
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Résultats de l'Analyse du Bulletin</title>
-  <!-- Bootstrap Icons -->
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.5/font/bootstrap-icons.min.css"
-    rel="stylesheet">
-
-</head>
-
-<body>
-  <div class="container">
-    <div class="text-center mb-4">
-      <h2>Résultats de l'Analyse du Bulletin de Soin</h2>
-      <div class="alert alert-info">
-        <strong>Type de Document :</strong>
-        <span class="badge bg-primary ms-2" (click)="goToBulletin()">Bulletin de Soin</span>
-        <span class="badge bg-primary ms-2" (click)="goToPrescription()">Ordonnance</span>
-
+<div class="container">
+  <!-- Document extraction moved to aside -->
+  <aside class="document-extraction mb-3">
+    <details>
+      <summary><h5>Extracted Documents</h5></summary>
+      <div class="card shadow-sm p-2">
+        <ul class="nav nav-tabs nav-sm mb-2">
+          <li class="nav-item" *ngFor="let file of files; let i = index">
+            <a class="nav-link py-1 px-2" 
+               [class.active]="i === selectedIndex" 
+               (click)="selectedIndex = i">
+              {{ file.name }}
+            </a>
+          </li>
+        </ul>
+        <div class="card-body p-2">
+          <small><strong>Document ID:</strong> {{ files[selectedIndex].id }}</small><br>
+          <small><strong>File Name:</strong> {{ files[selectedIndex].name }}</small>
+        </div>
       </div>
-      <p class="text-muted">Fichier : <span class="fst-italic">Non spécifié</span></p>
-    </div>
+    </details>
+  </aside>
+  <div class="cnam-form position-relative">
+    <!-- Watermark -->
+    <div class="watermark" style="background-image: url('/api/placeholder/300/300');"></div>
+    
 
+    <div class="container py-3">
+      <!-- Control Buttons - Refined -->
+      <div class="form-buttons mb-3">
+        <button type="button" class="btn btn-primary btn-sm" (click)="toggleEditMode()">
+          <i class="bi bi-pencil-square me-1"></i>
+          {{ isEditMode ? 'Save Changes' : 'Verify Data' }}
+        </button>
+      </div>
 
-    <div *ngIf="!isBulletinUploaded" class="upload-section">
-      <div class="modal-body">
-        <div class="upload-section">
-            <div class="section-header">
-                <h3 class="section-title">Document Files</h3>
-                <span class="file-counter">{{ uploadFiles.length }}/{{ MAX_FILES }} files</span>
+      <!-- Status Alert -->
+      <div *ngIf="showStatusAlert" class="alert py-2" [ngClass]="{'alert-warning': isEditMode, 'alert-success': !isEditMode && showStatusAlert}">
+        <small *ngIf="isEditMode">Edit mode enabled. Please verify and correct any fields as needed.</small>
+        <small *ngIf="!isEditMode && showStatusAlert">Changes saved successfully!</small>
+      </div>
+
+      <!-- Header -->
+      <div class="header">
+        <div class="title-container">
+          <div class="title-ar">الصندوق الوطني للتأمين على المرض</div>
+          <p class="title-fr">BULLETIN DE REMBOURSEMENT<br>DES FRAIS DE SOINS</p>
+        </div>
+        <div class="ref-container">
+          <div>Réf. Dossier</div>
+          <div class="ref-box">
+            <input type="text" [(ngModel)]="formData.refDossier" name="refDossier" class="form-control" [readonly]="!isEditMode">
+          </div>
+        </div>
+      </div>
+
+      <!-- Rest of the form remains unchanged -->
+      <!-- Assure Social Section -->
+      <div class="form-section">
+        <div class="section-header">
+          <div>À REMPLIR PAR L'ASSURÉ SOCIAL</div>
+          <div>يعمر من طرف المضمون الاجتماعي</div>
+        </div>
+
+        <!-- Identifiant Unique - Refined to match field-dots style -->
+        <div class="id-row">
+          <div class="id-label">
+            <span>IDENTIFIANT<br>UNIQUE</span>
+            <span>المعرف الوحيد</span>
+          </div>
+          <div class="field-dots" style="width: 75%; padding: 0 15px; margin: 0;">
+            <input type="text" class="form-control" maxlength="12" 
+                   [(ngModel)]="formData.identifiantUnique" 
+                   name="identifiantUnique" 
+                   [readonly]="!isEditMode"
+                   style="height: 30px; width: 100%;">
+          </div>
+        </div>
+
+        <!-- Checkbox Section -->
+        <div class="checkbox-row">
+          <div class="checkbox-item">
+            <span class="checkbox-label">CNSS</span>
+            <div class="checkbox-box">
+              <input type="checkbox" [(ngModel)]="formData.cnss" name="cnss" [disabled]="!isEditMode" (change)="onCheckboxChange('cnss')">
             </div>
-            
-            <div id="drop-area" class="drop-area" 
-                [class.disabled]="!canAddMoreFiles"
-                (dragover)="onDragOver($event)" 
-                (dragleave)="onDragLeave($event)"
-                (drop)="onDrop($event)">
-                <div class="drop-message">
-                    <div class="upload-icon" [class.disabled]="!canAddMoreFiles">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24"
-                            fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                            stroke-linejoin="round">
-                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                            <polyline points="17 8 12 3 7 8"></polyline>
-                            <line x1="12" y1="3" x2="12" y2="15"></line>
-                        </svg>
-                    </div>
-                    <p *ngIf="canAddMoreFiles">Drag and drop files here</p>
-                    <p *ngIf="!canAddMoreFiles" class="limit-reached">Maximum files reached ({{ MAX_FILES }})</p>
-                    
-                    <p *ngIf="canAddMoreFiles">or</p>
-                    <label class="file-input-label" *ngIf="canAddMoreFiles">
-                        Browse Files
-                        <input type="file" (change)="onFileSelected($event)" multiple class="file-input">
-                    </label>
+          </div>
+          <div class="checkbox-item">
+            <span class="checkbox-label">CNRPS</span>
+            <div class="checkbox-box">
+              <input type="checkbox" [(ngModel)]="formData.cnrps" name="cnrps" [disabled]="!isEditMode" (change)="onCheckboxChange('cnrps')">
+            </div>
+          </div>
+          <div class="checkbox-item">
+            <span class="checkbox-label">Convention bilatérale</span>
+            <div class="checkbox-box">
+              <input type="checkbox" [(ngModel)]="formData.convbi" name="convbi" [disabled]="!isEditMode" (change)="onCheckboxChange('convbi')">
+            </div>
+          </div>
+        </div>
+
+        <!-- L'assuré social -->
+        <div class="assure-info">
+          <div class="assure-header">
+            <div>L'assuré social</div>
+            <div>المضمون الاجتماعي</div>
+          </div>
+
+          <div class="field-row">
+            <div class="field-label">Prénom :</div>
+            <div class="field-dots">
+              <input type="text" [(ngModel)]="formData.prenom" name="prenom" class="form-control" [readonly]="!isEditMode">
+            </div>
+            <div class="field-value-ar">الاسم :</div>
+          </div>
+
+          <div class="field-row">
+            <div class="field-label">Nom :</div>
+            <div class="field-dots">
+              <input type="text" [(ngModel)]="formData.nom" name="nom" class="form-control" [readonly]="!isEditMode">
+            </div>
+            <div class="field-value-ar">اللقب :</div>
+          </div>
+
+          <div class="field-row">
+            <div class="field-label">Adresse :</div>
+            <div class="field-dots">
+              <input type="text" [(ngModel)]="formData.adresse" name="adresse" class="form-control" [readonly]="!isEditMode">
+            </div>
+            <div class="field-value-ar">العنوان :</div>
+          </div>
+
+          <div class="field-row">
+            <div class="field-label">Code postal :</div>
+            <div class="field-dots">
+              <input type="text" [(ngModel)]="formData.codePostal" name="codePostal" class="form-control" [readonly]="!isEditMode">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Le malade -->
+      <div class="form-section">
+        <div class="section-header">
+          <div>Le malade</div>
+          <div>المريض</div>
+        </div>
+
+        <div class="malade-section">
+          <div class="malade-options">
+            <div class="malade-option" 
+                 [class.selected]="formData.assureSocial" 
+                 (click)="setPatientType('assureSocial')">
+              <div class="option-title">
+                L'assuré social<br>المضمون الاجتماعي
+                <div class="checkbox-box">
+                  <!-- Checkbox is now only for visual feedback -->
+                  <input type="checkbox" [(ngModel)]="formData.assureSocial" name="assureSocial" [disabled]="!isEditMode">
                 </div>
+              </div>
             </div>
-
-            <div class="upload-info">
-                <p class="upload-requirements">
-                    <span><strong>Requirements:</strong></span>
-                    <span>• Maximum {{ MAX_FILES }} files</span>
-                    <span>• Select document type for each file</span>
-                    <span>• Accepted formats: PDF, JPG, PNG</span>
-                </p>
+            <div class="malade-option" 
+                 [class.selected]="formData.conjoint" 
+                 (click)="setPatientType('conjoint')">
+              <div class="option-title">
+                Le conjoint<br>الزوج(ة)
+                <div class="checkbox-box">
+                  <input type="checkbox" [(ngModel)]="formData.conjoint" name="conjoint" [disabled]="!isEditMode">
+                </div>
+              </div>
             </div>
-
-            <div class="selected-files" *ngIf="uploadFiles.length > 0">
-                <h3>Selected Files</h3>
-                <ul class="file-list">
-                    <li *ngFor="let uploadFile of uploadFiles; let i = index" class="file-item">
-                        <div class="file-info">
-                            <div class="file-icon" [ngClass]="getFileIcon(uploadFile.file)">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
-                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                    stroke-linejoin="round">
-                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                                    <polyline points="14 2 14 8 20 8"></polyline>
-                                </svg>
-                            </div>
-                            <div class="file-details">
-                                <span class="file-name">{{ uploadFile.file.name }}</span>
-                                <span class="file-size">{{ formatFileSize(uploadFile.file.size) }}</span>
-                            </div>
-                        </div>
-
-                        
-                        <button class="btn-icon" (click)="removeFile(i)" aria-label="Remove file">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
-                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                stroke-linejoin="round">
-                                <line x1="18" y1="6" x2="6" y2="18"></line>
-                                <line x1="6" y1="6" x2="18" y2="18"></line>
-                            </svg>
-                        </button>
-                    </li>
-                </ul>
+            <div class="malade-option" 
+                 [class.selected]="formData.enfant" 
+                 (click)="setPatientType('enfant')">
+              <div class="option-title">
+                L'enfant (*)<br>الابن (*)
+                <div class="checkbox-box">
+                  <input type="checkbox" [(ngModel)]="formData.enfant" name="enfant" [disabled]="!isEditMode">
+                </div>
+              </div>
             </div>
-        </div>
-
-        <div class="form-group" *ngIf="isUploading">
-            <label>Extract Progress</label>
-            <div class="progress-bar">
-                <div class="progress" [style.width.%]="uploadProgress"></div>
-            </div>
-            <div class="progress-text">{{ uploadProgress }}%</div>
-        </div>
-    </div>
-
-    <div class="modal-footer">
-        <button class="btn btn-secondary" (click)="closeModal()">Cancel</button>
-        <button 
-            class="btn btn-primary" 
-            (click)="uploadDocuments()" 
-           >
-            <span *ngIf="!isUploading">Extract Text</span>
-            <span *ngIf="isUploading">Extracting...</span>
-        </button>
-    </div>
-    </div>
-
-    <div *ngIf="isBulletinUploaded && isPrescriptionUploaded">
-
-
-      <!-- Assuré -->
-      <div class="card mb-4">
-        <div class="card-header bg-primary text-white">
-          <h4><i class="bi bi-person-badge me-2"></i> L'assuré social</h4>
-        </div>
-        <div class="card-body">
-          <div class="row mb-3">
-            <div class="col-md-6">
-              <label class="form-label">Identifiant unique</label>
-              <p class="field-bordered"></p>
-            </div>
-            <div class="col-md-6">
-              <label class="form-label">Type d'assurance</label>
-              <p class="field-bordered"></p>
+            <div class="malade-option" 
+                 [class.selected]="formData.ascendant" 
+                 (click)="setPatientType('ascendant')">
+              <div class="option-title">
+                L'ascendant (**)<br>الأصل (**)
+                <div class="checkbox-box">
+                  <input type="checkbox" [(ngModel)]="formData.ascendant" name="ascendant" [disabled]="!isEditMode">
+                </div>
+              </div>
             </div>
           </div>
-          <div class="row mb-3">
-            <div class="col-md-6">
-              <label class="form-label">Prénom</label>
-              <p class="field-bordered"></p>
+
+          <div style="padding: 0 10px;">
+            <div style="font-size: 10px; color: #009a44; text-align: right; margin: 5px 0;">
+              (*) 01 = الولد الأول, 02 = الثاني, 03 = الثالث... الخ
             </div>
-            <div class="col-md-6">
-              <label class="form-label">Nom</label>
-              <p class="field-bordered"></p>
+            <div style="font-size: 10px; color: #009a44; text-align: right; margin: 5px 0;">
+              (**) 01 = الأب, 02 = الأم
             </div>
-          </div>
-          <div class="row">
-            <div class="col-md-8">
-              <label class="form-label">Adresse</label>
-              <p class="field-bordered"></p>
+
+            <div class="field-row">
+              <div class="field-label">PRÉNOM :</div>
+              <div class="field-dots">
+                <input type="text" [(ngModel)]="formData.prenomMalade" name="prenomMalade" class="form-control" [readonly]="!isEditMode">
+              </div>
+              <div class="field-value-ar">الاسم :</div>
             </div>
-            <div class="col-md-4">
-              <label class="form-label">Code Postal</label>
-              <p class="field-bordered"></p>
+
+            <div class="field-row">
+              <div class="field-label">NOM :</div>
+              <div class="field-dots">
+                <input type="text" [(ngModel)]="formData.nomMalade" name="nomMalade" class="form-control" [readonly]="!isEditMode">
+              </div>
+              <div class="field-value-ar">اللقب :</div>
+            </div>
+
+            <div class="field-row">
+              <div class="field-label">DATE DE NAISSANCE :</div>
+              <div class="field-dots">
+                <input type="text" [(ngModel)]="formData.dateNaissance" name="dateNaissance" class="form-control" [readonly]="!isEditMode">
+              </div>
+              <div class="field-value-ar">تاريخ الولادة :</div>
+            </div>
+
+            <div class="field-row">
+              <div class="field-label">N° DU TEL PORTABLE</div>
+              <div class="field-dots">
+                <input type="text" [(ngModel)]="formData.numTel" name="numTel" class="form-control" [readonly]="!isEditMode">
+              </div>
+              <div class="field-value-ar">رقم الهاتف الجوال</div>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Patient -->
-      <div class="card mb-4">
-        <div class="card-header bg-success text-white">
-          <h4><i class="bi bi-person-lines-fill me-2"></i> Le Malade</h4>
-        </div>
-        <div class="card-body">
-          <div class="row mb-3">
-            <div class="col-md-12">
-              <label class="form-label">Relation avec l'assuré</label>
-              <p class="field-bordered"></p>
-            </div>
-          </div>
-          <div class="row mb-3">
-            <div class="col-md-6">
-              <label class="form-label">Prénom</label>
-              <p class="field-bordered"></p>
-            </div>
-            <div class="col-md-6">
-              <label class="form-label">Nom</label>
-              <p class="field-bordered"></p>
-            </div>
-          </div>
-          <div class="row">
-            <div class="col-md-6">
-              <label class="form-label">Date de Naissance</label>
-              <p class="field-bordered"></p>
-            </div>
-            <div class="col-md-6">
-              <label class="form-label">Numéro de portable</label>
-              <p class="field-bordered"></p>
-            </div>
-          </div>
-        </div>
+      <!-- Signature -->
+      <div class="signature-row">
+        <div>SIGNATURE DE L'ASSURÉ</div>
+        <div>إمضاء المضمون الاجتماعي</div>
       </div>
 
-      <!-- Actions -->
-      <div class="action-container">
-        <button class="btn btn-primary">
-          <i class="bi bi-printer"></i> Imprimer les Données
-        </button>
-        <button class="btn btn-danger">
-          <i class="bi bi-flag"></i> Signaler un Problème
-        </button>
+      <!-- Important Notice -->
+      <div class="important-notice">
+        <div class="notice-fr">
+          <strong>Très important:</strong> Veuillez déposer ce formulaire au centre régional ou local le plus proche de
+          votre domicile dans un délai ne dépassant pas les 60 jours à date des soins.
+        </div>
+        <div class="notice-ar">
+          <strong>هام جدا:</strong> تسلم هذه البطاقة إلى أقرب مركز جهوي أو محلي لإقامتكم خلال مدة لا تفوق 60 يوما من
+          تاريخ العلاج.
+        </div>
       </div>
     </div>
   </div>
-</body>
-
-</html>
+</div>
