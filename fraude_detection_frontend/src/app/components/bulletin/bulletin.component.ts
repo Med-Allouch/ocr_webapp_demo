@@ -2,7 +2,6 @@ import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Output, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { DocumentsService } from '../../services/documents.service';
-import { HttpClientModule, provideHttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 
 @Component({
@@ -59,30 +58,37 @@ constructor(
 
 
   ngOnInit(): void {
-    this.loadDataFromDatabase();
+    // this.loadDataFromDatabase();
+    this.documentsService.getLatestBulletin().subscribe({
+      next: data => console.log('Data:', data),
+      error: err => console.error('Error:', err)
+    });
+
+
+    
   }
 
-  loadDataFromDatabase(): void {
-    this.documentsService.getBulletinData().subscribe({
-      next: (data) => {
-        if (data) {
-          this.formData = { ...data };
+  // loadDataFromDatabase(): void {
+  //   this.documentsService.getBulletinData().subscribe({
+  //     next: (data) => {
+  //       if (data) {
+  //         this.formData = { ...data };
           
-          const idString = data.identifiantUnique || '';
-          for (let i = 0; i < 12; i++) {
-            this.identifiant[i] = idString[i] || '';
-          }
+  //         const idString = data.identifiantUnique || '';
+  //         for (let i = 0; i < 12; i++) {
+  //           this.identifiant[i] = idString[i] || '';
+  //         }
           
-          this.saveOriginalState();
-        }
-      },
-      error: (err) => {
-        console.error('Error loading data:', err);
-        // Fallback to default data if needed
-        this.loadDefaultData();
-      }
-    });
-  }
+  //         this.saveOriginalState();
+  //       }
+  //     },
+  //     error: (err) => {
+  //       console.error('Error loading data:', err);
+  //       // Fallback to default data if needed
+  //       this.loadDefaultData();
+  //     }
+  //   });
+  // }
   
   // Add this method to handle the fallback case
   loadDefaultData(): void {
@@ -142,6 +148,9 @@ constructor(
       this.showStatusAlert = false;
     }, 3000);
   }
+
+
+
 
 
   onSubmit(): void {

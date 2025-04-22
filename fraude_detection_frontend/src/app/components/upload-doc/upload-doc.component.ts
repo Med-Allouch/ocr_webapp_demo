@@ -1,7 +1,11 @@
+//Upload Document
+
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Output } from '@angular/core';
+import { Component, ElementRef, EventEmitter, Output, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { DocumentsService } from '../../services/documents.service';
+import { firstValueFrom } from 'rxjs';
 
 interface UploadFile {
   file: File;
@@ -16,7 +20,7 @@ interface UploadFile {
   styleUrl: './upload-doc.component.css'
 })
 export class UploadDocComponent {
-
+  @ViewChild('dropArea') dropArea!: ElementRef;
   @Output() close = new EventEmitter<boolean>();
 
   uploadFiles: UploadFile[] = [];
@@ -26,7 +30,10 @@ export class UploadDocComponent {
   readonly MAX_FILES = 5;
   readonly ALLOWED_TYPES = ['image/jpeg', 'image/png', 'application/pdf'];
 
-  constructor(private router: Router) {}
+  constructor(
+    private documentsService: DocumentsService,
+    private router: Router,
+  ) {}
 
   get canAddMoreFiles(): boolean {
     return this.uploadFiles.length < this.MAX_FILES;
@@ -36,24 +43,23 @@ export class UploadDocComponent {
     return this.uploadFiles.length === 0 || this.isUploading;
   }
 
+  
+
   onDragOver(event: DragEvent): void {
     event.preventDefault();
-    event.stopPropagation();
-    if (this.canAddMoreFiles) {
-      document.getElementById('drop-area')?.classList.add('active');
+    if (this.dropArea?.nativeElement && this.canAddMoreFiles) {
+      this.dropArea.nativeElement.classList.add('active');
     }
   }
 
   onDragLeave(event: DragEvent): void {
     event.preventDefault();
-    event.stopPropagation();
-    document.getElementById('drop-area')?.classList.remove('active');
+    this.dropArea?.nativeElement.classList.remove('active');
   }
 
   onDrop(event: DragEvent): void {
     event.preventDefault();
-    event.stopPropagation();
-    document.getElementById('drop-area')?.classList.remove('active');
+    this.dropArea?.nativeElement.classList.remove('active');
 
     if (!this.canAddMoreFiles) {
       this.showError(`Maximum ${this.MAX_FILES} files allowed`);
@@ -87,15 +93,20 @@ export class UploadDocComponent {
 
     for (let i = 0; i < filesToAdd; i++) {
       const file = files[i];
-
-      if (this.ALLOWED_TYPES.includes(file.type)) {
-        this.uploadFiles.push({
-          file: file,
-          id: this.generateUniqueId()
-        });
-      } else {
+      if (!this.ALLOWED_TYPES.includes(file.type)) {
         this.showError(`Unsupported file type: ${file.name}`);
+        continue;
       }
+
+      const isDuplicate = this.uploadFiles.some(
+        f => f.file.name === file.name && f.file.size === file.size
+      );
+      if (isDuplicate) {
+        this.showError(`Duplicate file ignored: ${file.name}`);
+        continue;
+      }
+
+      this.uploadFiles.push({ file, id: this.generateUniqueId() });
     }
 
     if (files.length > remainingSlots) {
@@ -108,89 +119,66 @@ export class UploadDocComponent {
   }
 
   showError(message: string): void {
-    alert(message);
+    console.error(message); // You can replace this with a toast or snackbar
   }
 
   closeSection(): void {
     this.close.emit(false);
   }
 
-  uploadDocuments(): void {
-    if (this.uploadFiles.length === 0) {
-      this.showError('Please select at least one file');
-      return;
-    }
-
+  async uploadDocuments(): Promise<void> {
+    if (this.isSubmitDisabled) return;
+  
     this.isUploading = true;
-    let progress = 0;
-    const interval = setInterval(() => {
-      progress += 15;
-      this.uploadProgress = progress;
-
-      if (progress >= 100) {
-        clearInterval(interval);
-        setTimeout(() => {
-          this.isUploading = false;
-          this.processExtractedDocuments();
-        }, 500);
-      }
-    }, 300);
+    this.uploadProgress = 0;
+  
+    const files = this.uploadFiles.map(f => f.file);
+  
+    try {
+      const result = await firstValueFrom(this.documentsService.uploadDocuments(files));
+      console.log('Upload result:', result);
+      this.uploadProgress = 100;
+      this.processExtractedDocuments();
+    } catch (error: any) {
+      this.showError('Upload failed: ' + (error?.message || 'Unknown error'));
+    } finally {
+      this.isUploading = false;
+    }
   }
+  
 
-  goToDocument() {
+  processExtractedDocuments(): void {
+    this.close.emit(true);
 
-    this.router.navigate(['/', 'bulletin/:id'])
-    .then(nav => {
-      console.log(nav); // true if navigation is successful
-    }, err => {
-      console.log(err) // when there's an error
-    });
+    const files = this.uploadFiles.map(file => ({
+      name: file.file.name,
+      id: file.id
+    }));
 
+    if (files.length === 1) {
+      this.router.navigate([`extracted/${files[0].id}`], { state: { files } });
+    } else {
+      this.router.navigate(['extracted/tabs'], { state: { files } });
     }
-
-    processExtractedDocuments(): void {
-      this.close.emit(true);
-    
-      if (this.uploadFiles.length === 1) {
-        // Create file info object
-        const fileInfo = {
-          name: this.uploadFiles[0].file.name,
-          id: this.uploadFiles[0].id
-        };
-        
-        // Navigate to single file view with state data
-        this.router.navigate([`extracted/${fileInfo.id}`], {
-          state: { files: [fileInfo] }
-        });
-      } else {
-        this.router.navigate(['extracted/tabs'], {
-          state: { 
-            files: this.uploadFiles.map(file => ({
-              name: file.file.name,
-              id: file.id
-            }))
-          }
-        });
-      }
-    }
+  }
 
   generateUniqueId(): string {
     return Date.now().toString(36) + Math.random().toString(36).substring(2);
   }
 
   getFileIcon(file: File): string {
-    if (file.type.includes('pdf')) {
-      return 'pdf-icon';
-    } else if (file.type.includes('image')) {
-      return 'image-icon';
-    } else {
-      return 'file-icon';
-    }
+    if (file.type.includes('pdf')) return 'pdf-icon';
+    if (file.type.includes('image')) return 'image-icon';
+    return 'file-icon';
   }
 
   formatFileSize(size: number): string {
     if (size < 1024) return `${size} B`;
     if (size < 1024 * 1024) return `${(size / 1024).toFixed(1)} KB`;
     return `${(size / (1024 * 1024)).toFixed(1)} MB`;
+  }
+
+  trackById(index: number, item: UploadFile): string {
+    return item.id;
   }
 }
